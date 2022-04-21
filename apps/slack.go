@@ -1,9 +1,9 @@
-package main
+package apps
 
 import (
 	"fmt"
 )
 
-func slack() {
+func Slack() {
 	fmt.Println("Slack bot")
 }

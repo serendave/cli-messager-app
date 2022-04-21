@@ -3,10 +3,20 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"log"
 	"os"
+
+	"github.com/joho/godotenv"
+	"github.com/serendave/cli-messager-app/apps"
 )
 
 func main() {
+	err := godotenv.Load(".env")
+
+	if err != nil {
+		log.Fatalf("Error loading .env file")
+	}
+
 	reader := bufio.NewReader(os.Stdin)
 
 	fmt.Println("Welcome to cli-messager-app. Please which bot you would like to use:")
@@ -24,11 +34,11 @@ func main() {
 
 		if char == '1' {
 			fmt.Println("Slack is selected")
-			slack()
+			apps.Slack()
 			break
 		} else if char == '2' {
 			fmt.Println("Discord is selected")
-			discord()
+			apps.Discord()
 			break
 		} else if char == 'q' {
 			os.Exit(1)
