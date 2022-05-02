@@ -46,7 +46,7 @@ func NewWorkspace(w http.ResponseWriter, req *http.Request) {
 	reader := bufio.NewReader(os.Stdin)
 	var selectedUser slack.User
 	for {
-		fmt.Print("Type the number: ")
+		fmt.Print("Enter the number of the user you want to message to: ")
 		char, _, err := reader.ReadRune()
 
 		if err != nil {
@@ -59,45 +59,46 @@ func NewWorkspace(w http.ResponseWriter, req *http.Request) {
 			fmt.Println("Please, provide a valid number")
 		} else {
 			selectedUser = users[number-1]
-			break
-		}
-	}
+			openConversationParams := slack.OpenConversationParameters{
+				Users: []string{selectedUser.ID},
+			}
 
-	openConversationParams := slack.OpenConversationParameters{
-		Users: []string{selectedUser.ID},
-	}
+			channel, _, _, err := client.OpenConversation(&openConversationParams)
+			if err != nil {
+				panic(err)
+			}
 
-	channel, _, _, err := client.OpenConversation(&openConversationParams)
-	if err != nil {
-		panic(err)
-	}
+			message, err := reader.ReadString('\n')
 
-	message, err := reader.ReadString('\n')
+			for {
+				fmt.Println("Type message you want to send to this user: ")
+				message, err = reader.ReadString('\n')
+				if message == "\n" {
+					break
+				}
 
-	for {
-		fmt.Println("Type message you want to send to this user: ")
-		message, err = reader.ReadString('\n')
+				if err != nil {
+					panic(err)
+				}
 
-		if err != nil {
-			panic(err)
-		}
+				attachment := slack.Attachment{
+					Pretext: message,
+				}
+				// PostMessage will send the message away.
+				// First parameter is just the channelID, makes no sense to accept it
+				_, _, err := client.PostMessage(
+					channel.ID,
+					// uncomment the item below to add a extra Header to the message, try it out :)
+					//slack.MsgOptionText("New message from bot", false),
+					slack.MsgOptionAttachments(attachment),
+				)
 
-		attachment := slack.Attachment{
-			Pretext: message,
-		}
-		// PostMessage will send the message away.
-		// First parameter is just the channelID, makes no sense to accept it
-		_, _, err := client.PostMessage(
-			channel.ID,
-			// uncomment the item below to add a extra Header to the message, try it out :)
-			//slack.MsgOptionText("New message from bot", false),
-			slack.MsgOptionAttachments(attachment),
-		)
-
-		if err != nil {
-			panic(err)
-		} else {
-			fmt.Println("Message sent successfully")
+				if err != nil {
+					panic(err)
+				} else {
+					fmt.Println("Message sent successfully")
+				}
+			}
 		}
 	}
 }
