@@ -68,32 +68,34 @@ func bogJoined(s *discordgo.Session, m *discordgo.GuildCreate) {
 			fmt.Println("Please, provide a valid number")
 		} else {
 			selectedMember = *members[number-1]
-			break
-		}
-	}
+			channel, err := s.UserChannelCreate(selectedMember.User.ID)
 
-	channel, err := s.UserChannelCreate(selectedMember.User.ID)
+			if err != nil {
+				panic(err)
+			}
 
-	if err != nil {
-		panic(err)
-	}
+			message, err := reader.ReadString('\n')
 
-	message, err := reader.ReadString('\n')
+			for {
+				fmt.Println("Type message you want to send to this user: ")
+				message, err = reader.ReadString('\n')
 
-	for {
-		fmt.Println("Type message you want to send to this user: ")
-		message, err = reader.ReadString('\n')
+				if message == "\n" {
+					break
+				}
 
-		if err != nil {
-			panic(err)
-		}
+				if err != nil {
+					panic(err)
+				}
 
-		_, err = s.ChannelMessageSend(channel.ID, message)
+				_, err = s.ChannelMessageSend(channel.ID, message)
 
-		if err != nil {
-			panic(err)
-		} else {
-			fmt.Println("Message sent successfully")
+				if err != nil {
+					panic(err)
+				} else {
+					fmt.Println("Message sent successfully")
+				}
+			}
 		}
 	}
 }
